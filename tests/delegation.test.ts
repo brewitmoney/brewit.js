@@ -8,7 +8,6 @@ import { Hex } from 'viem';
   
 describe('toAccount', () => {
   const privateKey = generatePrivateKey();
-  console.log(privateKey)
   const signer = privateKeyToAccount(privateKey);
   const mockParams: AccountParams = {
     chainId: 84530,

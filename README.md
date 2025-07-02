@@ -53,7 +53,7 @@ const policyParams = {
 };
 
 const txs = await createDelegatedAccount(mainAccount, validator, policyParams);
-// Send these transactions using your preferred method
+// Send these transactions using the main account and client
 ```
 
 
@@ -90,8 +90,6 @@ const account = await toAccount({
 ```
 
 
-
-
 ### Update a delegated account
 
 ```ts
@@ -104,7 +102,7 @@ const updatedPolicyParams = {
 };
 
 const updateTxs = await updateDelegatedAccount(mainAccount, updatedPolicyParams, validator);
-// Send these transactions using your preferred method
+// Send these transactions using the main account and client
 ```
 
 ### Remove a delegated account
@@ -113,9 +111,8 @@ const updateTxs = await updateDelegatedAccount(mainAccount, updatedPolicyParams,
 import { removeDelegatedAccount } from 'brewit/delegation';
 
 const removeTxs = await removeDelegatedAccount(mainAccount, validator);
-// Send these transactions using your preferred method
+// Send these transactions using the main account and client
 ```
-
 
 ### Send a transaction
 
@@ -124,9 +121,9 @@ import { createAccountClient } from 'brewit';
 
 const client = createAccountClient(account, bundlerUrl);
 
-const tx = await client.sendTransaction({
-  account: account,
-  to: '0x...',
-  value: '0x...',   
+const tx = await client.sendTransaction(calls: {
+  to: '0x...00',
+  value: 0,   
+  data: '0x'
 });
 ```

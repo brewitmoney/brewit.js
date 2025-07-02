@@ -1,9 +1,9 @@
 {
   "name": "brewit",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/index.d.mts",
   "scripts": {
     "dev": "tsup src/index.ts src/account/index.ts src/delegation/index.ts src/automation/index.ts --format esm,cjs --dts",
     "build": "tsup src/index.ts src/account/index.ts src/delegation/index.ts src/automation/index.ts --format esm,cjs --dts",
@@ -15,22 +15,22 @@
     ".": {
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.mts"
     },
     "./account": {
       "import": "./dist/account/index.mjs",
       "require": "./dist/account/index.js",
-      "types": "./dist/account/index.d.ts"
+      "types": "./dist/account/index.d.mts"
     },
     "./delegation": {
       "import": "./dist/delegation/index.mjs",
       "require": "./dist/delegation/index.js",
-      "types": "./dist/delegation/index.d.ts"
+      "types": "./dist/delegation/index.d.mts"
     },
     "./automation": {
       "import": "./dist/automation/index.mjs",
       "require": "./dist/automation/index.js",
-      "types": "./dist/automation/index.d.ts"
+      "types": "./dist/automation/index.d.mts"
     }
   },
   "keywords": [],

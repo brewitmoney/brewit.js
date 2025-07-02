@@ -9,6 +9,7 @@ import {
   sepolia,
   arbitrum,
   gnosis,
+  monadTestnet
 } from 'viem/chains';
 
 export const polygonsandbox = /*#__PURE__*/ defineChain({
@@ -46,6 +47,7 @@ export const getChain = (chainId: number): Chain => {
     sepolia,
     bsc,
     gnosis,
+    monadTestnet
   ].find((chain: any) => chain.id == chainId) as Chain;
 };
 
