@@ -187,11 +187,22 @@ export const buildEnableSmartSession = async (
       '0xaf7060fd', // swapTokensSingleV3NativeToERC20
     ];
 
+    const KuruSwapContract: Address =
+      '0xc816865f172d640d93712C68a7E1F83F3fA63235';
+
+    const kuruSwapSelectors: Hex[] = [
+      '0xffa5210a', // anyToAnySwap
+    ];
     actions = lifiSwapSelectors.map((selector) => ({
       actionTarget: LiFiDiamondContract,
       actionTargetSelector: selector,
       actionPolicies: [getSudoPolicy()],
     }));
+    actions.push(...kuruSwapSelectors.map((selector) => ({
+      actionTarget: KuruSwapContract,
+      actionTargetSelector: selector,
+      actionPolicies: [getSudoPolicy()],
+    })));
 
     const tokenActions = policyParams.tokenAccess.map((tokenAccess) => {
       const tokenActions = [];
