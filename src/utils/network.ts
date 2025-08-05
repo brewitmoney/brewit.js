@@ -9,6 +9,12 @@ import {
   sepolia,
   arbitrum,
   gnosis,
+  unichain,
+  avalanche,
+  worldchain,
+  sonic,
+  scroll,
+  celo,
   monadTestnet
 } from 'viem/chains';
 
@@ -47,6 +53,12 @@ export const getChain = (chainId: number): Chain => {
     sepolia,
     bsc,
     gnosis,
+    unichain,
+    avalanche,
+    worldchain,
+    sonic,
+    scroll,
+    celo,
     monadTestnet
   ].find((chain: any) => chain.id == chainId) as Chain;
 };
