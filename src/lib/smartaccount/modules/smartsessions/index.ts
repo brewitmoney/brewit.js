@@ -27,21 +27,21 @@ import {
   getPermissionId,
   Session,
 } from '@rhinestone/module-sdk';
-import { OWNABLE_VALIDATOR_ADDRESS, SMART_SESSIONS_ADDRESS, SPEND_LIMIT_POLICY_ADDRESS } from '../../../../constants';
 import { privateKeyToAccount } from 'viem/accounts';
 import { PolicyParams, Transaction } from '../../../../types';
 import { SmartAccount } from 'viem/account-abstraction';
+import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from '../../../../constants/brewit';
 
 export const getSessionValidatorAccount = (
-  sessionPKey: Hex
+  sessionPKey: Hex,
 ): PrivateKeyAccount => {
   const validator = privateKeyToAccount(sessionPKey);
   return validator;
 };
 
-export function getSessionValidatorDetails(validatorAccount: Hex) {
+export function getSessionValidatorDetails(validatorAccount: Hex, version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION) {
   return {
-    address: OWNABLE_VALIDATOR_ADDRESS,
+    address: getBrewitConstant('validators', version).ownableValidator as Hex,
     initData: encodeValidationData({
       threshold: 1,
       owners: [validatorAccount],
@@ -50,19 +50,21 @@ export function getSessionValidatorDetails(validatorAccount: Hex) {
 }
 
 export const buildInstallSmartSessionModule = async (
-  account: SmartAccount
+  account: SmartAccount,
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<Transaction | null> => {
 
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   const isModuleInstalled = await isInstalled(
     account,
-    SMART_SESSIONS_ADDRESS,
+    smartSessionsAddress,
     'validator'
   );
 
   if (!isModuleInstalled) {
     return await buildInstallModule(
       account,
-      SMART_SESSIONS_ADDRESS,
+      smartSessionsAddress,
       'validator',
       '0x'
     );
@@ -113,8 +115,11 @@ export const buildUseSmartSession = async (
 export const buildEnableSmartSession = async (
   chainId: number,
   policyParams: PolicyParams,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<Transaction> => {
+
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
 
   let actions: ActionData[] = [];
   const transferSelector = toFunctionSelector({
@@ -142,7 +147,7 @@ export const buildEnableSmartSession = async (
           actionTargetSelector: transferSelector, // function selector to be used in the execution
           actionPolicies: [
             {
-              policy: SPEND_LIMIT_POLICY_ADDRESS,
+              policy: spendLimitPolicyAddress,
               initData: spendingLimitsPolicy.initData,
             },
           ],
@@ -286,8 +291,11 @@ export const buildRemoveSession = async (
 export const buildDisableActionPolicies = async (
   chainId: number,
   disableActionParams: PolicyParams,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<Transaction[]> => {
+
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
 
   const session: Session = {
     sessionValidator: validator.address,
@@ -338,7 +346,7 @@ export const buildDisableActionPolicies = async (
           const action = getDisableActionPoliciesAction({
             permissionId: getPermissionId({ session }),
             actionId: actionId,
-            policies: [SPEND_LIMIT_POLICY_ADDRESS],
+            policies: [spendLimitPolicyAddress],
           });
 
           return {
@@ -399,8 +407,11 @@ export const buildDisableActionPolicies = async (
 export const buildEnableActionPolicies = async (
   chainId: number,
   enableActionParams: PolicyParams,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<Transaction[]> => {
+
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
 
   const session: Session = {
     sessionValidator: validator.address,
@@ -459,7 +470,7 @@ export const buildEnableActionPolicies = async (
                 actionTargetSelector: transferSelector,
                 actionPolicies: [
                   {
-                    policy: SPEND_LIMIT_POLICY_ADDRESS,
+                    policy: spendLimitPolicyAddress,
                     initData: spendingLimitsPolicy.initData,
                   },
                 ],

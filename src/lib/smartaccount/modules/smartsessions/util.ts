@@ -14,23 +14,26 @@ import { installSmartSessionsAbi, abi as smartSessionsAbi } from './abi';
 import { buildUseSmartSession } from '.';
 import SpendingLimitPolicy from '../abis/SpendingLimitPolicy.json';
 import { getModuleByChainId } from '../address';
-import { SMART_SESSIONS_ADDRESS, SPEND_LIMIT_POLICY_ADDRESS } from '../../../../constants';
 import { Token } from '../../../../types';
 import { Subaccount } from '../../../../types';
 import { getSessionValidator } from '../../auth';
 import { getPublicClient } from '../../../../utils/network';
+import { BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION, getBrewitConstant } from '../../../../constants/brewit';
 
 const getSpendPolicy = async (
   client: PublicClient,
   configId: string,
   account: Address,
-  token: Address
+  token: Address,
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<any> => {
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   const spendPolicy = await client.readContract({
-    address: SPEND_LIMIT_POLICY_ADDRESS,
+    address: spendLimitPolicyAddress,
     abi: SpendingLimitPolicy.abi,
     functionName: 'getPolicyData',
-    args: [configId, SMART_SESSIONS_ADDRESS, token, account],
+    args: [configId, smartSessionsAddress, token, account],
   });
 
   return spendPolicy;
@@ -39,7 +42,8 @@ export async function getSpendableTokenInfo(
   client: PublicClient,
   tokenAddress: Hex,
   account: Hex,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ) {
   // Ethereum provider (you can use Infura or any other provider)
 
@@ -98,13 +102,16 @@ export async function getSpendLimitTokensInfo(
   client: PublicClient,
   tokens: Token[],
   account: Hex,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<{
   address: Address;
   limit: string;
   spent: string;
   balance: bigint;
 }[]> {
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   if (!client.chain) {
     throw new Error('Chain not found');
   }
@@ -131,12 +138,12 @@ export async function getSpendLimitTokensInfo(
         selector: execCallSelector,
       });
       return {
-        address: SPEND_LIMIT_POLICY_ADDRESS as Address,
+        address: spendLimitPolicyAddress as Address,
         abi: SpendingLimitPolicy.abi as Abi,
         functionName: 'getPolicyData',
         args: [
           computeConfigId(useSmartSession.permissionId, actionId, account),
-          SMART_SESSIONS_ADDRESS,
+          smartSessionsAddress,
           token.address,
           account,
         ],
@@ -184,11 +191,15 @@ export async function checkPolicyEnabled(
   client: PublicClient,
   tokens: Token[],
   account: Hex,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ) {
   if (!client.chain) {
     throw new Error('Chain not found');
   }
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
+  
   const useSmartSession = await buildUseSmartSession(
     client.chain.id,
     validator
@@ -213,14 +224,14 @@ export async function checkPolicyEnabled(
       });
 
       return {
-        address: SMART_SESSIONS_ADDRESS as Hex,
+        address: smartSessionsAddress as Hex,
         abi: smartSessionsAbi,
         functionName: 'isActionPolicyEnabled',
         args: [
           account,
           useSmartSession.permissionId,
           actionId,
-          SPEND_LIMIT_POLICY_ADDRESS,
+          spendLimitPolicyAddress,
         ],
       };
     }),
@@ -248,7 +259,8 @@ export async function getSudoAccessTokensInfo(
   client: PublicClient,
   tokens: Token[],
   account: Hex,
-  validator: { address: Address; initData: Hex; salt?: Hex }
+  validator: { address: Address; initData: Hex; salt?: Hex },
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<{
   address: Address;
   permissions: {
@@ -259,6 +271,9 @@ export async function getSudoAccessTokensInfo(
   if (!client.chain) {
     throw new Error('Chain not found');
   }
+
+  const spendLimitPolicyAddress = getBrewitConstant('policies', version).spendLimitPolicy;
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   const useSmartSession = await buildUseSmartSession(
     client.chain.id,
     validator
@@ -294,7 +309,7 @@ export async function getSudoAccessTokensInfo(
       });
 
       return {
-        address: SMART_SESSIONS_ADDRESS as Hex,
+        address: smartSessionsAddress as Hex,
         abi: smartSessionsAbi,
         functionName: 'getEnabledActions',
         args: [account, useSmartSession.permissionId],

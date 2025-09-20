@@ -5,12 +5,18 @@ import { toDelegatedAccount } from "./toDelegatedAccount";
 import { getPublicClient } from "../../utils/network";
 import { ToSafeSmartAccountReturnType } from "permissionless/accounts";
 import { getPKeySessionValidator, getPassKeyValidator } from "../../lib/smartaccount/auth";
+import { BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
 
 
-  export const toAccount = async (
-    params: AccountParams
+// Extend AccountParams to include version
+type VersionedAccountParams = AccountParams & {
+  version?: BREWIT_VERSION_TYPE;
+};
+
+export const toAccount = async (
+    params: VersionedAccountParams
   ): Promise<ToSafeSmartAccountReturnType<'0.7'>> => {
-    const { chainId, rpcEndpoint, signer, safeAddress, config, type, useValidator = true } = params;
+    const { chainId, rpcEndpoint, signer, safeAddress, config, type, useValidator = true, version = DEFAULT_BREWIT_VERSION } = params;
   
     const client = getPublicClient(
       chainId,
@@ -21,7 +27,7 @@ import { getPKeySessionValidator, getPassKeyValidator } from "../../lib/smartacc
       if (type == 'delegated') {
         if (isDelegatedConfig(config)) {
           smartAccount = await toDelegatedAccount(
-            params as DelegatedAccountParams
+            { ...params as DelegatedAccountParams, version }
           );
         }
         else {
@@ -30,7 +36,7 @@ import { getPKeySessionValidator, getPassKeyValidator } from "../../lib/smartacc
       } 
       else {
         smartAccount = await toValidatorAccount(
-          params as MainAccountParams
+          { ...params as MainAccountParams, version }
         );
       }
     } else {
@@ -41,9 +47,10 @@ import { getPKeySessionValidator, getPassKeyValidator } from "../../lib/smartacc
           address: safeAddress,
           validators: [
             config.validator === 'passkey'
-              ? await getPassKeyValidator(signer)
-              : getPKeySessionValidator(signer),
+              ? await getPassKeyValidator(signer, version)
+              : getPKeySessionValidator(signer, version),
           ],
+          version,
         });
       } else {
         throw new Error('Invalid account type');

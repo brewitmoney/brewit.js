@@ -5,13 +5,9 @@ import {
   privateKeyToAccount,
 } from 'viem/accounts';
 import { encodeValidationData } from '@rhinestone/module-sdk';
-import {
-  OWNABLE_VALIDATOR_ADDRESS,
-  WEBAUTHN_VALIDATOR_ADDRESS,
-} from '../../constants';
 import { Address, Hex } from 'viem';
 import { DelegatedAccountConfig, Subaccount, ValidatorType } from '../../types';
-import { WEBAUTHN_SESSION_VALIDATOR_ADDRESS } from '../../constants';
+import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from '../../constants/brewit';
 import { KernelValidator } from '../../types/kernel';
 
 export const generateRandomPrivateKey = (): Hex => {
@@ -20,7 +16,10 @@ export const generateRandomPrivateKey = (): Hex => {
 
 
 
-export function getPKeySessionValidator(validator: LocalAccount): {
+export function getPKeySessionValidator(
+  validator: LocalAccount, 
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
+): {
   validator: ValidatorType;
   address: Hex;
   initData: Hex;
@@ -28,7 +27,7 @@ export function getPKeySessionValidator(validator: LocalAccount): {
 } {
   return {
     validator: 'ownable',
-    address: OWNABLE_VALIDATOR_ADDRESS,
+    address: getBrewitConstant('validators', version).ownableValidator as Hex,
     context: encodeValidationData({
       threshold: 1,
       owners: [validator.address],
@@ -41,24 +40,31 @@ export function getPKeySessionValidator(validator: LocalAccount): {
 }
 
 export async function getPassKeySessionValidator(
-  validator: KernelValidator
+  validator: KernelValidator,
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<{ validator: string; address: Hex; initData: Hex }> {
   // Replace with proper passkey session validator
   return {
     validator: 'passkey',
-    address: WEBAUTHN_SESSION_VALIDATOR_ADDRESS as Hex,
+    address: getBrewitConstant('validators', version).webauthnSessionValidator as Hex,
     initData: (await validator.getEnableData()) as Hex,
   };
 }
 
-export const getPassKeyValidator = async (validator: any) => {
+export const getPassKeyValidator = async (
+  validator: any, 
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
+) => {
   return {
-    address: WEBAUTHN_VALIDATOR_ADDRESS,
+    address: getBrewitConstant('validators', version).webauthnValidator as Hex,
     context: await validator.getEnableData(),
   };
 };
 
-export function getSessionValidator(subaccount: DelegatedAccountConfig): {
+export function getSessionValidator(
+  subaccount: DelegatedAccountConfig,
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
+): {
   validator: ValidatorType;
   address: Hex;
   initData: Hex;
@@ -68,8 +74,8 @@ export function getSessionValidator(subaccount: DelegatedAccountConfig): {
     validator: subaccount.validator,
     address:
       subaccount.validator == 'ownable'
-        ? OWNABLE_VALIDATOR_ADDRESS
-        : (WEBAUTHN_SESSION_VALIDATOR_ADDRESS as Hex),
+        ? getBrewitConstant('validators', version).ownableValidator as Hex
+        : getBrewitConstant('validators', version).webauthnSessionValidator as Hex,
     initData: subaccount.validatorInitData,
     salt: subaccount.salt,
   };

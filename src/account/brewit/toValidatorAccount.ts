@@ -16,14 +16,19 @@ import { getPassKeyValidator, getPKeySessionValidator } from "../../lib/smartacc
 import { ToSafeSmartAccountReturnType } from 'permissionless/accounts';
 import { MainAccountParams } from '../../types';
 import { getPublicClient } from '../../utils/network';
-import { OWNABLE_VALIDATOR_ADDRESS, WEBAUTHN_VALIDATOR_ADDRESS } from "../../constants";
+import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
 
 
+
+// Extend MainAccountParams to include version
+interface VersionedMainAccountParams extends MainAccountParams {
+  version?: BREWIT_VERSION_TYPE;
+}
 
 export async function toValidatorAccount(
-    params: MainAccountParams
+    params: VersionedMainAccountParams
   ): Promise<ToSafeSmartAccountReturnType<'0.7'>> {
-    const { chainId, rpcEndpoint, signer, safeAddress, config } = params;
+    const { chainId, rpcEndpoint, signer, safeAddress, config, version = DEFAULT_BREWIT_VERSION } = params;
 
     
 
@@ -31,15 +36,17 @@ export async function toValidatorAccount(
       chainId,
       rpcEndpoint,
     );
+
     
     if (!chainId) {
         throw new Error('Chain ID not found');
     }
 
+    // Get versioned validator addresses
     const validatorAddress =
     config.validator == 'passkey'
-      ? WEBAUTHN_VALIDATOR_ADDRESS
-      : OWNABLE_VALIDATOR_ADDRESS;
+      ? getBrewitConstant('validators', version).webauthnValidator
+      : getBrewitConstant('validators', version).ownableValidator;
   const nonceKey = validatorAddress
     ? BigInt(
         pad(validatorAddress, {
@@ -93,11 +100,12 @@ export async function toValidatorAccount(
       address: safeAddress,
       validators: [
         config.validator === 'passkey'
-          ? await getPassKeyValidator(signer)
-          : getPKeySessionValidator(signer),
+          ? await getPassKeyValidator(signer, version)
+          : getPKeySessionValidator(signer, version),
       ],
       signUserOperation: signUserOperation,
       getDummySignature: getDummySignature,
+      version, // Pass the version to getSmartAccount
     });
   
     return smartAccount;

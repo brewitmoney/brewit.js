@@ -8,14 +8,19 @@ import { DelegatedAccountParams } from "../../types";
 import { getPassKeyValidator, getPKeySessionValidator, getSessionValidator } from "../../lib/smartaccount/auth";
 import { buildUseSmartSession } from "../../lib/smartaccount/modules/smartsessions";
 import { ToSafeSmartAccountReturnType } from "permissionless/accounts";
-import { SMART_SESSIONS_ADDRESS } from "../../constants";
+import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
 import { getSmartAccount } from "../../lib/smartaccount";
 
+// Extend DelegatedAccountParams to include version
+interface VersionedDelegatedAccountParams extends DelegatedAccountParams {
+  version?: BREWIT_VERSION_TYPE;
+}
+
 export async function toDelegatedAccount(
-    params: DelegatedAccountParams
+    params: VersionedDelegatedAccountParams
   ): Promise<ToSafeSmartAccountReturnType<'0.7'>>  {
 
-    const { chainId, rpcEndpoint, signer, safeAddress, config } = params;
+    const { chainId, rpcEndpoint, signer, safeAddress, config, version = DEFAULT_BREWIT_VERSION } = params;
 
     let sessionDetails: {
       mode: SmartSessionModeType;
@@ -23,7 +28,7 @@ export async function toDelegatedAccount(
       enableSessionData?: EnableSessionData;
     };
     if (config) {
-      const SessionValidator = getSessionValidator(config);
+      const SessionValidator = getSessionValidator(config, version);
       sessionDetails = await buildUseSmartSession(chainId, SessionValidator);
     }
 
@@ -37,7 +42,7 @@ export async function toDelegatedAccount(
     }
 
       
-    const validatorAddress = SMART_SESSIONS_ADDRESS;
+    const validatorAddress = getBrewitConstant('smartSessions', version);
   
     const nonceKey = validatorAddress
       ? BigInt(
@@ -110,8 +115,8 @@ export async function toDelegatedAccount(
       address: safeAddress,
       validators: [
         config.validator === 'passkey'
-          ? await getPassKeyValidator(signer)
-          : getPKeySessionValidator(signer),
+          ? await getPassKeyValidator(signer, version)
+          : getPKeySessionValidator(signer, version),
       ],
       signUserOperation: signUserOperation,
       getDummySignature: getDummySignature,

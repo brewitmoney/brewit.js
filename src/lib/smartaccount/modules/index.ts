@@ -3,7 +3,6 @@ import { getModule, installModule, isModuleInstalled, SENTINEL_ADDRESS } from "@
 import { getAccount, getClient, ModuleType } from "@rhinestone/module-sdk";
 import { Address, encodeAbiParameters, encodeFunctionData, getAddress, Hex, PublicClient } from "viem";
 import { Transaction } from "../../../types";
-import {SMART_SESSIONS_ADDRESS } from "../../../constants";
 import { SmartAccount } from "viem/account-abstraction";
 
 

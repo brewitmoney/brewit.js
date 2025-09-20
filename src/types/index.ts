@@ -1,5 +1,7 @@
 import { Address, Hex } from 'viem';
 
+export type BREWIT_VERSION_TYPE = '1.0.0' | '1.1.0';
+
 export interface Transaction {
   to: Hex;
   value: bigint;

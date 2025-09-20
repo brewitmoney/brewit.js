@@ -9,14 +9,7 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { entryPoint07Address } from 'viem/account-abstraction';
 
 import { toSafeSmartAccount, ToSafeSmartAccountReturnType } from 'permissionless/accounts';
-import {
-  DEFAULT_SAFE_SIGNER_ADDRESS,
-  ERC7579_LAUNCHPAD_ADDRESS,
-  RHINESTONE_ATTESTER_ADDRESS,
-  SAFE_4337_MODULE_ADDRESS,
-  SAFE_SINGLETON_ADDRESS,
-  BREWIT_ATTESTER_ADDRESS,
-} from '../../constants';
+import { getBrewitConstants, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from '../../constants/brewit';
 
 
 interface SmartAccountClientParams {
@@ -28,9 +21,10 @@ interface SmartAccountClientParams {
   getDummySignature?: any;
   validators?: { address: Address; context: Hex }[];
   executors?: { address: Address; context: Hex }[];
-
   validatorAddress?: Address;
   factoryAddress?: Address;
+  // Add version parameter for Brewit account versioning
+  version?: BREWIT_VERSION_TYPE;
 }
 
 export const getSmartAccount = async ({
@@ -42,12 +36,16 @@ export const getSmartAccount = async ({
   getDummySignature,
   validators,
   executors,
+  version = DEFAULT_BREWIT_VERSION, // Default to latest version
 }: SmartAccountClientParams): Promise<ToSafeSmartAccountReturnType<'0.7'>> => {
+
+  // Get versioned constants
+  const constants = getBrewitConstants(version);
 
   // Create a dummy private key signer
   const dummyPrivateKey = generatePrivateKey(); // Generate a dummy private key
   const dummySigner = privateKeyToAccount(dummyPrivateKey); // Create an account from the private key
-  dummySigner.address = DEFAULT_SAFE_SIGNER_ADDRESS;
+  dummySigner.address = constants.defaultSafeSignerAddress;
 
   // Use the dummy signer if no signer is provided
   signer = signer || dummySigner;
@@ -64,16 +62,11 @@ export const getSmartAccount = async ({
     validators,
     executors,
     nonceKey,
-    safe4337ModuleAddress: SAFE_4337_MODULE_ADDRESS,
-    erc7579LaunchpadAddress: ERC7579_LAUNCHPAD_ADDRESS,
-    safeSingletonAddress: SAFE_SINGLETON_ADDRESS,
-
-    attesters: [
-      RHINESTONE_ATTESTER_ADDRESS, // Rhinestone Attester
-      BREWIT_ATTESTER_ADDRESS, // Brewit Attester - only for test modules
-      // MOCK_ATTESTER_ADDRESS, // Mock Attester - do not use in production
-    ],
-    attestersThreshold: 1,
+    safe4337ModuleAddress: constants.safe4337ModuleAddress,
+    erc7579LaunchpadAddress: constants.erc7579LaunchpadAddress,
+    safeSingletonAddress: constants.safeSingletonAddress,
+    attesters: constants.attesters,
+    attestersThreshold: constants.attestersThreshold,
   });
   
 
