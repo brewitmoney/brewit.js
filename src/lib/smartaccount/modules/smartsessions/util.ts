@@ -18,7 +18,8 @@ import { Token } from '../../../../types';
 import { Subaccount } from '../../../../types';
 import { getSessionValidator } from '../../auth';
 import { getPublicClient } from '../../../../utils/network';
-import { BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION, getBrewitConstant } from '../../../../constants/brewit';
+import { DEFAULT_BREWIT_VERSION, getBrewitConstant } from '../../../../constants/brewit';
+import { BREWIT_VERSION_TYPE } from '../../../../types';
 
 const getSpendPolicy = async (
   client: PublicClient,

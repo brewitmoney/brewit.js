@@ -8,7 +8,9 @@ import { DelegatedAccountParams } from "../../types";
 import { getPassKeyValidator, getPKeySessionValidator, getSessionValidator } from "../../lib/smartaccount/auth";
 import { buildUseSmartSession } from "../../lib/smartaccount/modules/smartsessions";
 import { ToSafeSmartAccountReturnType } from "permissionless/accounts";
-import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
+import { getBrewitConstant, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
+import { BREWIT_VERSION_TYPE } from "../../types";
+
 import { getSmartAccount } from "../../lib/smartaccount";
 
 // Extend DelegatedAccountParams to include version

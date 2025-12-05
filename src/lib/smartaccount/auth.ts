@@ -7,7 +7,8 @@ import {
 import { encodeValidationData } from '@rhinestone/module-sdk';
 import { Address, Hex } from 'viem';
 import { DelegatedAccountConfig, Subaccount, ValidatorType } from '../../types';
-import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from '../../constants/brewit';
+import { getBrewitConstant, DEFAULT_BREWIT_VERSION } from '../../constants/brewit';
+import { BREWIT_VERSION_TYPE } from '../../types';
 import { KernelValidator } from '../../types/kernel';
 
 export const generateRandomPrivateKey = (): Hex => {

@@ -9,7 +9,8 @@ import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { entryPoint07Address } from 'viem/account-abstraction';
 
 import { toSafeSmartAccount, ToSafeSmartAccountReturnType } from 'permissionless/accounts';
-import { getBrewitConstants, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from '../../constants/brewit';
+import { getBrewitConstants, DEFAULT_BREWIT_VERSION } from '../../constants/brewit';
+import { BREWIT_VERSION_TYPE } from '../../types';
 
 
 interface SmartAccountClientParams {

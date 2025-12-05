@@ -30,7 +30,8 @@ import {
 import { privateKeyToAccount } from 'viem/accounts';
 import { PolicyParams, Transaction } from '../../../../types';
 import { SmartAccount } from 'viem/account-abstraction';
-import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from '../../../../constants/brewit';
+import { getBrewitConstant, DEFAULT_BREWIT_VERSION } from '../../../../constants/brewit';
+import { BREWIT_VERSION_TYPE } from '../../../../types';
 
 export const getSessionValidatorAccount = (
   sessionPKey: Hex,

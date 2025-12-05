@@ -1,7 +1,7 @@
 import { Address, Hex } from 'viem';
+import { BREWIT_VERSION_TYPE } from '../types';
 
 // Define version types for Brewit accounts
-export type BREWIT_VERSION_TYPE = '1.0.0' | '1.1.0';
 
 // Define the structure for Brewit constants
 export interface BrewitConstants {
@@ -70,15 +70,37 @@ export const BrewitVersionToConstantsMap: {
     },
     smartSessions: '0x00000000002B0eCfbD0496EE71e01257dA0E37DE', // Updated SMART_SESSIONS_ADDRESS
     defaultSafeSignerAddress: '0x000000000000000000000000000000000000dEaD', // Same
+  },
+  '1.2.0': {
+    safe4337ModuleAddress: '0x7579f2AD53b01c3D8779Fe17928e0D48885B0003', // Same as v1.0.0
+    erc7579LaunchpadAddress: '0x75798463024Bda64D83c94A64Bc7D7eaB41300eF', // Same as v1.0.0
+    safeSingletonAddress: '0x29fcB43b46531BcA003ddC8FCB67FFE91900C762', // Same as v1.0.0
+    attesters: [
+      '0x000000333034E9f539ce08819E12c1b8Cb29084d', // RHINESTONE_ATTESTER_ADDRESS
+      '0xC9e29745a752B551a7FCD19Afe50EcCEf5fd7d02', // BREWIT_ATTESTER_ADDRESS
+    ],
+    attestersThreshold: 1,
+    validators: {
+      ownableValidator: '0x2483DA3A338895199E5e538530213157e931Bf06', // Updated OWNABLE_VALIDATOR_ADDRESS
+      webauthnValidator: '0x0000000000578c4cB0e472a5462da43C495C3F33', // Updated WEBAUTHN_VALIDATOR_ADDRESS
+      webauthnSessionValidator: '0x4853727f59C3C161a58E153E2B0F9F683EcFB9Df', // Same
+    },
+    policies: {
+      spendLimitPolicy: '0x6d12b354080557a9e74db3c0e2e0c26607597a08', // Same
+      sudoPolicy: '0x0000003111cD8e92337C100F22B7A9dbf8DEE301', // Same
+    },
+    smartSessions: '0x00000000008bdaba73cd9815d79069c247eb4bda', // Updated SMART_SESSIONS_ADDRESS
+    defaultSafeSignerAddress: '0x000000000000000000000000000000000000dEaD', // Same
   }
 };
 
 // Version constants
 export const BREWIT_V1_0_0: BREWIT_VERSION_TYPE = '1.0.0';
 export const BREWIT_V1_1_0: BREWIT_VERSION_TYPE = '1.1.0';
+export const BREWIT_V1_2_0: BREWIT_VERSION_TYPE = '1.2.0';
 
 // Default version (latest)
-export const DEFAULT_BREWIT_VERSION: BREWIT_VERSION_TYPE = '1.1.0';
+export const DEFAULT_BREWIT_VERSION: BREWIT_VERSION_TYPE = BREWIT_V1_1_0;
 
 // Helper function to get constants by version
 export const getBrewitConstants = (version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION): BrewitConstants => {

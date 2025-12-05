@@ -5,7 +5,8 @@ import { toDelegatedAccount } from "./toDelegatedAccount";
 import { getPublicClient } from "../../utils/network";
 import { ToSafeSmartAccountReturnType } from "permissionless/accounts";
 import { getPKeySessionValidator, getPassKeyValidator } from "../../lib/smartaccount/auth";
-import { BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
+import { DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
+import { BREWIT_VERSION_TYPE } from "../../types";
 
 
 // Extend AccountParams to include version

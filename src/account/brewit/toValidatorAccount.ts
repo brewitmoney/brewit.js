@@ -16,7 +16,9 @@ import { getPassKeyValidator, getPKeySessionValidator } from "../../lib/smartacc
 import { ToSafeSmartAccountReturnType } from 'permissionless/accounts';
 import { MainAccountParams } from '../../types';
 import { getPublicClient } from '../../utils/network';
-import { getBrewitConstant, BREWIT_VERSION_TYPE, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
+import { getBrewitConstant, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
+import { BREWIT_VERSION_TYPE } from '../../types';
+
 
 
 
