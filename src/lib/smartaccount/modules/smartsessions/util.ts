@@ -357,7 +357,8 @@ export async function getDelegatedTokensList(
   client: PublicClient,
   accountTokens: Token[],
   subAccountInfo: Subaccount,
-  account: Address
+  account: Address,
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ) {
   const subAccountTokens = accountTokens.filter(
     (token: Token) => token.address !== zeroAddress
@@ -366,13 +367,14 @@ export async function getDelegatedTokensList(
   let subAccountTokensBalance: any;
   let updatedAccountTokens: Token[] = [];
   if (subAccountInfo?.policy === 'spendlimit') {
-    const sessionValidator = getSessionValidator(subAccountInfo);
+    const sessionValidator = getSessionValidator(subAccountInfo, version);
 
     subAccountTokensBalance = await getSpendLimitTokensInfo(
       client,
       subAccountTokens,
       account,
-      sessionValidator
+      sessionValidator,
+      version
     );
 
     updatedAccountTokens = subAccountTokens.map(
@@ -396,12 +398,13 @@ export async function getDelegatedTokensList(
 
   let sudoActions: any;
   if (subAccountInfo?.policy === 'sudo') {
-    const sessionValidator = getSessionValidator(subAccountInfo);
+    const sessionValidator = getSessionValidator(subAccountInfo, version);
     sudoActions = await getSudoAccessTokensInfo(
       client,
       subAccountTokens,
       account,
-      sessionValidator
+      sessionValidator,
+      version
     );
     updatedAccountTokens = subAccountTokens.map(
       (token: Token, index: number) => ({

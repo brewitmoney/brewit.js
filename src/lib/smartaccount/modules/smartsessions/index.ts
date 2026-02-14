@@ -14,19 +14,21 @@ import {
   EnableSessionData,
   SmartSessionMode,
   SmartSessionModeType,
+  Session,
 } from './types';
 import {
-  encodeValidationData,
+  getPermissionId,
   getActionId,
-  getDisableActionPoliciesAction,
-  getEnableActionPoliciesAction,
   getEnableSessionsAction,
   getRemoveSessionAction,
+  getEnableActionPoliciesAction,
+  getDisableActionPoliciesAction,
+} from './usage';
+import {
+  encodeValidationData,
   getSpendingLimitsPolicy,
   getSudoPolicy,
-  getPermissionId,
-  Session,
-} from '@rhinestone/module-sdk';
+} from './policies';
 import { privateKeyToAccount } from 'viem/accounts';
 import { PolicyParams, Transaction } from '../../../../types';
 import { SmartAccount } from 'viem/account-abstraction';
@@ -136,12 +138,15 @@ export const buildEnableSmartSession = async (
   if (policyParams.policy === 'spendlimit') {
     actions = await Promise.all(
       policyParams.tokenLimits.map(async ({ token, amount }) => {
-        const spendingLimitsPolicy = getSpendingLimitsPolicy([
-          {
-            token: token,
-            limit: amount,
-          },
-        ]);
+        const spendingLimitsPolicy = getSpendingLimitsPolicy(
+          [
+            {
+              token: token,
+              limit: amount,
+            },
+          ],
+          version,
+        );
 
         return {
           actionTarget: token, // an address as the target of the session execution
@@ -202,12 +207,12 @@ export const buildEnableSmartSession = async (
     actions = lifiSwapSelectors.map((selector) => ({
       actionTarget: LiFiDiamondContract,
       actionTargetSelector: selector,
-      actionPolicies: [getSudoPolicy()],
+      actionPolicies: [getSudoPolicy(version)],
     }));
     actions.push(...kuruSwapSelectors.map((selector) => ({
       actionTarget: KuruSwapContract,
       actionTargetSelector: selector,
-      actionPolicies: [getSudoPolicy()],
+      actionPolicies: [getSudoPolicy(version)],
     })));
 
     const tokenActions = policyParams.tokenAccess.map((tokenAccess) => {
@@ -216,14 +221,14 @@ export const buildEnableSmartSession = async (
         tokenActions.push({
           actionTarget: tokenAccess.token,
           actionTargetSelector: approveSelector,
-          actionPolicies: [getSudoPolicy()],
+          actionPolicies: [getSudoPolicy(version)],
         });
       }
       if (tokenAccess.isTransferEnabled) {
         tokenActions.push({
           actionTarget: tokenAccess.token,
           actionTargetSelector: transferSelector,
-          actionPolicies: [getSudoPolicy()],
+          actionPolicies: [getSudoPolicy(version)],
         });
       }
       return tokenActions;
@@ -235,7 +240,7 @@ export const buildEnableSmartSession = async (
     sessionValidator: validator.address,
     sessionValidatorInitData: validator.initData,
     salt: validator.salt || toHex(toBytes('1', { size: 32 })),
-    userOpPolicies: [getSudoPolicy()],
+    userOpPolicies: [getSudoPolicy(version)],
     erc7739Policies: {
       allowedERC7739Content: [],
       erc1271Policies: [],
@@ -245,7 +250,11 @@ export const buildEnableSmartSession = async (
     chainId: BigInt(chainId),
   };
 
-  const action = getEnableSessionsAction({ sessions: [session] });
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
+  const action = getEnableSessionsAction({
+    smartSessionsAddress,
+    sessions: [session],
+  });
 
   return {
     to: action.to,
@@ -260,13 +269,14 @@ export const buildRemoveSession = async (
     initData: Hex;
     salt?: Hex;
   },
-  chainId: number
+  chainId: number,
+  version: BREWIT_VERSION_TYPE = DEFAULT_BREWIT_VERSION
 ): Promise<Transaction> => {
   const session: Session = {
     sessionValidator: validator.address,
     sessionValidatorInitData: validator.initData,
     salt: validator.salt || toHex(toBytes('1', { size: 32 })),
-    userOpPolicies: [getSudoPolicy()],
+    userOpPolicies: [getSudoPolicy(version)],
     erc7739Policies: {
       allowedERC7739Content: [],
       erc1271Policies: [],
@@ -276,7 +286,9 @@ export const buildRemoveSession = async (
     chainId: BigInt(chainId),
   };
 
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   const action = getRemoveSessionAction({
+    smartSessionsAddress,
     permissionId: getPermissionId({ session }),
   });
 
@@ -302,7 +314,7 @@ export const buildDisableActionPolicies = async (
     sessionValidator: validator.address,
     sessionValidatorInitData: validator.initData,
     salt: validator.salt || toHex(toBytes('1', { size: 32 })),
-    userOpPolicies: [getSudoPolicy()],
+    userOpPolicies: [getSudoPolicy(version)],
     erc7739Policies: {
       allowedERC7739Content: [],
       erc1271Policies: [],
@@ -334,6 +346,7 @@ export const buildDisableActionPolicies = async (
     stateMutability: 'view',
   });
 
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   let actions: Transaction[] = [];
   if (disableActionParams.policy === 'spendlimit') {
     actions = await Promise.all(
@@ -345,6 +358,7 @@ export const buildDisableActionPolicies = async (
             selector: transferSelector,
           });
           const action = getDisableActionPoliciesAction({
+            smartSessionsAddress,
             permissionId: getPermissionId({ session }),
             actionId: actionId,
             policies: [spendLimitPolicyAddress],
@@ -368,12 +382,13 @@ export const buildDisableActionPolicies = async (
           const removeActions = [];
           if (update.isTransferEnabled === false) {
             const action = getDisableActionPoliciesAction({
+              smartSessionsAddress,
               permissionId: getPermissionId({ session }),
               actionId: await getActionId({
                 target: update.token,
                 selector: transferSelector,
               }),
-              policies: [getSudoPolicy().policy],
+              policies: [getSudoPolicy(version).policy],
             });
             removeActions.push({
               to: action.to,
@@ -383,12 +398,13 @@ export const buildDisableActionPolicies = async (
           }
           if (update.isSwapEnabled === false) {
             const action = getDisableActionPoliciesAction({
+              smartSessionsAddress,
               permissionId: getPermissionId({ session }),
               actionId: await getActionId({
                 target: update.token,
                 selector: approveSelector,
               }),
-              policies: [getSudoPolicy().policy],
+              policies: [getSudoPolicy(version).policy],
             });
             removeActions.push({
               to: action.to,
@@ -418,7 +434,7 @@ export const buildEnableActionPolicies = async (
     sessionValidator: validator.address,
     sessionValidatorInitData: validator.initData,
     salt: validator.salt || toHex(toBytes('1', { size: 32 })),
-    userOpPolicies: [getSudoPolicy()],
+    userOpPolicies: [getSudoPolicy(version)],
     erc7739Policies: {
       allowedERC7739Content: [],
       erc1271Policies: [],
@@ -450,20 +466,25 @@ export const buildEnableActionPolicies = async (
     stateMutability: 'view',
   });
 
+  const smartSessionsAddress = getBrewitConstant('smartSessions', version);
   let actions: Transaction[] = [];
   if (enableActionParams.policy === 'spendlimit') {
     actions = await Promise.all(
       enableActionParams.tokenLimits
         .filter((update) => update.amount && update.amount > BigInt(0))
         .map(async (update) => {
-          const spendingLimitsPolicy = getSpendingLimitsPolicy([
-            {
-              token: update.token,
-              limit: update.amount,
-            },
-          ]);
+          const spendingLimitsPolicy = getSpendingLimitsPolicy(
+            [
+              {
+                token: update.token,
+                limit: update.amount,
+              },
+            ],
+            version,
+          );
 
           const action = getEnableActionPoliciesAction({
+            smartSessionsAddress,
             permissionId: getPermissionId({ session }),
             actionPolicies: [
               {
@@ -494,7 +515,7 @@ export const buildEnableActionPolicies = async (
         actionPolicies.push({
           actionTarget: update.token,
           actionTargetSelector: transferSelector,
-          actionPolicies: [getSudoPolicy()],
+          actionPolicies: [getSudoPolicy(version)],
         });
       }
 
@@ -502,13 +523,14 @@ export const buildEnableActionPolicies = async (
         actionPolicies.push({
           actionTarget: update.token,
           actionTargetSelector: approveSelector,
-          actionPolicies: [getSudoPolicy()],
+          actionPolicies: [getSudoPolicy(version)],
         });
       }
     }
 
     if (actionPolicies.length > 0) {
       const action = getEnableActionPoliciesAction({
+        smartSessionsAddress,
         permissionId: getPermissionId({ session }),
         actionPolicies,
       });

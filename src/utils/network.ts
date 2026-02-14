@@ -6,6 +6,7 @@ import {
   bsc,
   optimism,
   polygon,
+  polygonAmoy,
   sepolia,
   arbitrum,
   gnosis,
@@ -15,7 +16,8 @@ import {
   sonic,
   scroll,
   celo,
-  monadTestnet
+  monadTestnet,
+  etherlink,
 } from 'viem/chains';
 
 
@@ -60,6 +62,7 @@ export const getChain = (chainId: number): Chain => {
     mainnet,
     base,
     polygon,
+    polygonAmoy,
     baseSepolia,
     optimism,
     arbitrum,
@@ -73,7 +76,8 @@ export const getChain = (chainId: number): Chain => {
     scroll,
     celo,
     monad,
-    monadTestnet
+    monadTestnet,
+    etherlink,
   ].find((chain: any) => chain.id == chainId) as Chain;
 };
 

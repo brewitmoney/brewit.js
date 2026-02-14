@@ -78,3 +78,11 @@ export const getSmartAccount = async ({
 
 };
 
+// Rhinestone V2 Safe flow (Safe singleton + setup + addSafe7579 with flat ModuleInit[])
+export {
+  getSmartAccountRhinestoneV2,
+  getDeployArgsRhinestoneV2,
+  getAddressFromDeployArgs,
+  type GetSmartAccountRhinestoneV2Params,
+  type RhinestoneV2DeployArgs,
+} from './rhinestoneV2';

@@ -79,15 +79,15 @@ export const BrewitVersionToConstantsMap: {
       '0x000000333034E9f539ce08819E12c1b8Cb29084d', // RHINESTONE_ATTESTER_ADDRESS
       '0xC9e29745a752B551a7FCD19Afe50EcCEf5fd7d02', // BREWIT_ATTESTER_ADDRESS
     ],
-    attestersThreshold: 1,
+    attestersThreshold: 0,
     validators: {
-      ownableValidator: '0x2483DA3A338895199E5e538530213157e931Bf06', // Updated OWNABLE_VALIDATOR_ADDRESS
+      ownableValidator: '0x000000000013fdB5234E4E3162a810F54d9f7E98', // Updated OWNABLE_VALIDATOR_ADDRESS
       webauthnValidator: '0x0000000000578c4cB0e472a5462da43C495C3F33', // Updated WEBAUTHN_VALIDATOR_ADDRESS
-      webauthnSessionValidator: '0x4853727f59C3C161a58E153E2B0F9F683EcFB9Df', // Same
+      webauthnSessionValidator: '0x0000000000578c4cB0e472a5462da43C495C3F33', // Same
     },
     policies: {
-      spendLimitPolicy: '0x6d12b354080557a9e74db3c0e2e0c26607597a08', // Same
-      sudoPolicy: '0x0000003111cD8e92337C100F22B7A9dbf8DEE301', // Same
+      spendLimitPolicy: '0x000000000033212E272655D8a22402Db819477A6', // Same
+      sudoPolicy: '0x0000000000FEEc8D74e3143fBaBbca515358d869', // Same
     },
     smartSessions: '0x00000000008bdaba73cd9815d79069c247eb4bda', // Updated SMART_SESSIONS_ADDRESS
     defaultSafeSignerAddress: '0x000000000000000000000000000000000000dEaD', // Same

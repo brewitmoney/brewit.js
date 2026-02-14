@@ -11,7 +11,8 @@ import {
     UserOperation,
   } from 'viem/account-abstraction';
 import { getOwnableValidatorMockSignature } from '@rhinestone/module-sdk';
-import { getSmartAccount } from "../../lib/smartaccount";
+import { getSmartAccount, getSmartAccountRhinestoneV2 } from "../../lib/smartaccount";
+import { getBrewitConstants } from "../../constants/brewit";
 import { getPassKeyValidator, getPKeySessionValidator } from "../../lib/smartaccount/auth";
 import { ToSafeSmartAccountReturnType } from 'permissionless/accounts';
 import { MainAccountParams } from '../../types';
@@ -95,21 +96,45 @@ export async function toValidatorAccount(
       return signature;
     };
 
-    const smartAccount = await getSmartAccount({
-      client,
-      nonceKey,
-      signer: config.validator === 'ownable' ? signer : undefined,
-      address: safeAddress,
-      validators: [
-        config.validator === 'passkey'
-          ? await getPassKeyValidator(signer, version)
-          : getPKeySessionValidator(signer, version),
-      ],
-      signUserOperation: signUserOperation,
-      getDummySignature: getDummySignature,
-      version, // Pass the version to getSmartAccount
-    });
-  
+    const constants = getBrewitConstants(version);
+    const owners = [
+      config.validator === 'passkey' ? constants.defaultSafeSignerAddress : signer.address,
+    ];
+    const validators = [
+      config.validator === 'passkey'
+        ? await getPassKeyValidator(signer, version)
+        : getPKeySessionValidator(signer, version),
+    ];
+
+    const smartAccount =
+      version === '1.2.0'
+        ? ((await getSmartAccountRhinestoneV2({
+            client,
+            owners,
+            threshold: 1n,
+            validators,
+            address: typeof safeAddress === 'string' && safeAddress.length > 2 ? safeAddress : undefined,
+            nonceKey,
+            signUserOperation: async ({ userOperation, chainId }) =>
+              signUserOperation(userOperation as UserOperation<'0.7'>),
+            getDummySignature: () => getDummySignature(),
+            version,
+          })) as ToSafeSmartAccountReturnType<'0.7'>)
+        : await getSmartAccount({
+            client,
+            nonceKey,
+            signer: config.validator === 'ownable' ? signer : undefined,
+            address: safeAddress,
+            validators: [
+              config.validator === 'passkey'
+                ? await getPassKeyValidator(signer, version)
+                : getPKeySessionValidator(signer, version),
+            ],
+            signUserOperation: signUserOperation,
+            getDummySignature: getDummySignature,
+            version,
+          });
+
     return smartAccount;
   }
   

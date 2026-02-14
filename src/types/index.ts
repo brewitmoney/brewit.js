@@ -60,6 +60,8 @@ export type BaseAccountParams = {
   safeAddress?: Hex;
   type?: AccountType;
   useValidator?: boolean;
+  /** Brewit account version (e.g. '1.0.0', '1.1.0', '1.2.0'). Pass from client to use versioned constants. */
+  version?: BREWIT_VERSION_TYPE;
 };
 
 export type MainAccountConfig = {

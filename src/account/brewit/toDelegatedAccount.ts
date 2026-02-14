@@ -11,7 +11,8 @@ import { ToSafeSmartAccountReturnType } from "permissionless/accounts";
 import { getBrewitConstant, DEFAULT_BREWIT_VERSION } from "../../constants/brewit";
 import { BREWIT_VERSION_TYPE } from "../../types";
 
-import { getSmartAccount } from "../../lib/smartaccount";
+import { getSmartAccount, getSmartAccountRhinestoneV2 } from "../../lib/smartaccount";
+import { getBrewitConstants } from "../../constants/brewit";
 
 // Extend DelegatedAccountParams to include version
 interface VersionedDelegatedAccountParams extends DelegatedAccountParams {
@@ -77,31 +78,9 @@ export async function toDelegatedAccount(
           }),
         },
       });
-  
       if (!sessionDetails) {
         throw new Error('Session details are required for session transactions');
       }
-  
-      return encodeSmartSessionSignature({
-        mode: sessionDetails.mode,
-        permissionId: sessionDetails.permissionId,
-        signature,
-        enableSessionData: sessionDetails.enableSessionData,
-      });
-    };
-  
-    const getDummySignature = async () => {
-      const signature =
-        config.validator == 'passkey'
-          ? await signer.getStubSignature()
-          : getOwnableValidatorMockSignature({
-              threshold: 1,
-            });
-  
-      if (!sessionDetails) {
-        throw new Error('Session details are required for session transactions');
-      }
-  
       return encodeSmartSessionSignature({
         mode: sessionDetails.mode,
         permissionId: sessionDetails.permissionId,
@@ -110,20 +89,65 @@ export async function toDelegatedAccount(
       });
     };
 
-    const smartAccount = await getSmartAccount({
-      client,
-      nonceKey,
-      signer: config.validator === 'ownable' ? signer : undefined,
-      address: safeAddress,
-      validators: [
-        config.validator === 'passkey'
-          ? await getPassKeyValidator(signer, version)
-          : getPKeySessionValidator(signer, version),
-      ],
-      signUserOperation: signUserOperation,
-      getDummySignature: getDummySignature,
-    });
-  
+    const getDummySignature = async () => {
+      const signature =
+        config.validator == 'passkey'
+          ? await signer.getStubSignature()
+          : getOwnableValidatorMockSignature({
+              threshold: 1,
+            });
+
+      if (!sessionDetails) {
+        throw new Error('Session details are required for session transactions');
+      }
+
+      return encodeSmartSessionSignature({
+        mode: sessionDetails.mode,
+        permissionId: sessionDetails.permissionId,
+        signature,
+        enableSessionData: sessionDetails.enableSessionData,
+      });
+    };
+
+    const constants = getBrewitConstants(version);
+    const owners = [
+      config.validator === 'passkey' ? constants.defaultSafeSignerAddress : signer.address,
+    ];
+    const validators = [
+      config.validator === 'passkey'
+        ? await getPassKeyValidator(signer, version)
+        : getPKeySessionValidator(signer, version),
+    ];
+
+    const smartAccount =
+      version === '1.2.0'
+        ? ((await getSmartAccountRhinestoneV2({
+            client,
+            owners,
+            threshold: 1n,
+            validators,
+            address: typeof safeAddress === 'string' && safeAddress.length > 2 ? safeAddress : undefined,
+            nonceKey,
+            signUserOperation: async ({ userOperation }) =>
+              signUserOperation(userOperation as UserOperation<'0.7'>),
+            getDummySignature: () => getDummySignature(),
+            version,
+          })) as ToSafeSmartAccountReturnType<'0.7'>)
+        : await getSmartAccount({
+            client,
+            nonceKey,
+            signer: config.validator === 'ownable' ? signer : undefined,
+            address: safeAddress,
+            validators: [
+              config.validator === 'passkey'
+                ? await getPassKeyValidator(signer, version)
+                : getPKeySessionValidator(signer, version),
+            ],
+            signUserOperation: signUserOperation,
+            getDummySignature: getDummySignature,
+            version,
+          });
+
     return smartAccount;
   }
   
